@@ -15,7 +15,7 @@ import javax.swing.JLabel;
  * @author joao
  */
 public class LogElement {
-    private int entryNumber = 0;
+    public int entryNumber = 0;
     public int termNumber = 0;
     public String command = null;
     private int serialNumber;

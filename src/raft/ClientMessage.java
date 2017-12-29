@@ -22,7 +22,7 @@ public class ClientMessage {
         String response;
 
         if((type == 100) && (member.state == 1)) { // RECEBI HEARTBEAT
-            if (member.logManager.verifySerialExistance(serialNumber) == false){
+            if (member.logManager.verifySerialExistance(serialNumber) == -1){
                 member.logManager.addLogEntry(member.currentTerm, command, serialNumber);
             }
             return "Accepted-" + serialNumber + "-";

@@ -12,6 +12,7 @@ public class MyThread implements Runnable {
     private RaftMember member;
     private RAFTGui raftGui;
     private ClientMessage clientMessages;
+    private LogMessageProtocol logMessageProtocol;
 
     public MyThread(int id1, RAFTGui raftGui) {
         id = id1;
@@ -25,6 +26,7 @@ public class MyThread implements Runnable {
         }
         
         clientMessages = new ClientMessage(member);
+        logMessageProtocol = new LogMessageProtocol(member);
         
     }
 	
@@ -62,14 +64,14 @@ public class MyThread implements Runnable {
                 }
             }
             
-            for(int i = 0; (i < member.clusterSize) && (member.leaderId == member.id); i++){
+            for(int i = 0; (i < member.clusterSize + 3) && (member.leaderId == member.id); i++){
                 receive();
             }
             
             receive();
             
             if(member.leaderId == member.id){
-                //member.logManager.updateFollowersLogs();
+                member.logManager.updateFollowersLogs();
             }
         }
     }
@@ -80,19 +82,20 @@ public class MyThread implements Runnable {
         if(receiveCommand != null){
             String[] parts = receiveCommand.split("-");
                 
-            if(Integer.parseInt(parts[1]) < 100){
+            if(Integer.parseInt(parts[2]) < 100){
                 receiveCommand = Messages.processMessage(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), member); // SE FOR UM COMANDO QUE REQUER RESPOSTA ESTA VAI ESTAR CONTIDA EM receiveCommand, CASO CONTRARIO ELA É NULL 
                 if(receiveCommand != null){
                     String[] portMsgSplit = receiveCommand.split(":"); // A RESPSOTA É FEITA NO SEGUINTE FORMATO id(para quem enviamos):id(o nosso)-term-type-
                     member.sendMessage(Integer.parseInt(portMsgSplit[0]),portMsgSplit[1].getBytes());
                 }
-            }else if(Integer.parseInt(parts[1]) == 100){
-                receiveCommand = clientMessages.processMessage(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), parts[3].toString());
+            }else if(Integer.parseInt(parts[2]) == 100){
+                receiveCommand = clientMessages.processMessage(Integer.parseInt(parts[0]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), parts[4].toString());
                 if(receiveCommand != null){
                     member.sendMessage(Integer.parseInt(parts[0]), receiveCommand.getBytes());
                 }
             }else {
-                System.out.println("");
+                System.out.println(receiveCommand);
+                logMessageProtocol.processMessage(receiveCommand);
             }
         }
     }

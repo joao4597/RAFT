@@ -22,7 +22,7 @@ public class LogManager {
     private int entriesCommited;
     private RaftMember member;
     private int clusterSize;
-    private int entryNumber = 0;
+    public int entryNumber = 0;
     private ArrayList<FollowersInfo> followers;
     
     DefaultTableModel model;
@@ -57,7 +57,29 @@ public class LogManager {
         scrollPane = new JScrollPane(table);
         table.setFillsViewportHeight(true);
         raftGui.logContainer.add(scrollPane);
+        
+        addLogEntry(0, "I was Just Born", 0);
 
+    }
+    
+    public boolean checkIfEntryExists(int index, int term, int serial, String command){
+        for(int i = logList.size() - 1; i >= 0; i--){
+            if(logList.get(i).entryNumber == index){
+                if(logList.get(i).termNumber == term){
+                    if(logList.get(i).serialNumber() == serial){
+                        if(command.equals(logList.get(i).command)){
+                            
+                            for(int x = logList.size() - 1; x > i; x--){
+                                logList.remove(x);
+                            }
+                            
+                            return true;
+                        }
+                    }
+                }
+            }   
+        }
+        return false;
     }
     
     /**
@@ -112,9 +134,19 @@ public class LogManager {
      * stores it's ID and stores the next index in the log
      */
     public void setUpFolloersInfo(){
-        for(int i = 0; i < clusterSize - 1; i++){
+        followers.removeAll(logList);
+        for(int i = 0; i < clusterSize; i++){
             if(member.id != (firstPort + i)){
                 followers.add(new FollowersInfo(firstPort + i, entryNumber + 1));
+            }
+        }
+    }
+    
+    public void updateFollowersNextIndex(int id, int nextIndex){
+        for(int i = 0; i < clusterSize - 1; i++){
+            if(followers.get(i).id  == id){
+                followers.get(i).nextLogIndex = nextIndex;
+                return;
             }
         }
     }
@@ -134,29 +166,42 @@ public class LogManager {
                 String myID = Integer.toString(member.id);
                 String currentTerm = Integer.toString(member.currentTerm );
                 String type = "101";
-                String entryIndex = Integer.toString(entryNumber - 1);
-                String entryTerm = Integer.toString(logList.get(entryNumber).termNumber);
-                String command = logList.get(entryNumber).command;
                 
-                String message = myID + "-" + currentTerm + "-" + type + "-" + entryIndex + ":" + entryTerm + ":" + command + ":-";
+                //INFORMATION RELATIVE TO THE PRIVIOUS COMMAND, ASSUMED TO BE ALREADY STORED IN THE FOLLOWERS LOG
+                String prevEntryIndex = Integer.toString(entryNumber - 1);
+                String prevEntryTerm = Integer.toString(logList.get(entryNumber - 2).termNumber);
+                String prevSerialNumber = Integer.toString(logList.get(entryNumber - 2).termNumber);
+                String prevCommand = logList.get(entryNumber - 2).command;
+                
+                //LOG ENTRY TO BE APPENDED IN FOLLOWERS LOG
+                String entryIndex = Integer.toString(entryNumber);
+                String entryTerm = Integer.toString(logList.get(entryNumber - 1).termNumber);
+                String serialNumber = Integer.toString(logList.get(entryNumber - 1).termNumber);
+                String command = logList.get(entryNumber - 1).command;
+                
+                //SETUP STRING TO SEND TO FOLLOWER
+                String message = myID + "-" + currentTerm + "-" + type + "-" 
+                        + prevEntryIndex + ":" + prevEntryTerm + ":" + prevSerialNumber + ":" + prevCommand + ":-"
+                        + entryIndex + ":" + entryTerm + ":" + serialNumber + ":" + command + ":-";
+                
+                //SEND STRING TO FOLLOWER
                 member.sendMessage(followers.get(i).id, message.getBytes());
             }
         }
-            
     }
     
     /**
      * verifies if serial number exists in log
      * to avoid entry repetition
      * @param serial serial to check
-     * @return true if serial already exists, false otherwise
+     * @return entry number if serial exists, -1 otherwise
      */
-    public boolean verifySerialExistance(int serial){
+    public int verifySerialExistance(int serial){
         for(int i = 0; i < logList.size(); i++){
             if (logList.get(i).serialNumber() == serial)
-                return true;
+                return logList.get(i).entryNumber;
         }
-        return false;
+        return -1;
     }
     
 }

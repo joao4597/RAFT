@@ -48,7 +48,7 @@ public class MyThread implements Runnable {
 
             if(member.state == 1){ 
                 //System.out.println("Eu fui eleito Lider!! ->" + id);
-                if(count == 800 ){ // O CODIGO DENTRO DESTE IF É SÓ PARA DEITAR O LIDER ATUAL A BAIXO E FORÇAR REELEIÇÃO - PODES APAGAR SE NÃO PRECISARES
+                if(count == 10000 ){ // O CODIGO DENTRO DESTE IF É SÓ PARA DEITAR O LIDER ATUAL A BAIXO E FORÇAR REELEIÇÃO - PODES APAGAR SE NÃO PRECISARES
                     count = 0;
                     try {
                         //System.out.println("Thread: "+id+" DORMIR");
@@ -64,13 +64,13 @@ public class MyThread implements Runnable {
                 }
             }
             
-            for(int i = 0; (i < member.clusterSize + 3) && (member.leaderId == member.id); i++){
+            for(int i = 0; (i < member.clusterSize + 3) && (member.state == 1); i++){
                 receive();
             }
             
             receive();
             
-            if(member.leaderId == member.id){
+            if(member.state == 1){
                 member.logManager.updateFollowersLogs();
             }
         }

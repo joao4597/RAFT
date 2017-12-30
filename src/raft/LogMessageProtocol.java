@@ -29,6 +29,8 @@ public class LogMessageProtocol {
             appendRequestReceived(messageSplit[3], messageSplit[4]);
         }else if(Integer.parseInt(messageSplit[2]) == 102){
             appendConfirmationReceived(Integer.parseInt(messageSplit[0]), messageSplit[3]);
+        }else if(Integer.parseInt(messageSplit[2]) == 103){
+            appendRejectionReceived(Integer.parseInt(messageSplit[0]), messageSplit[3]);
         }
     }
     
@@ -72,5 +74,9 @@ public class LogMessageProtocol {
         String[] split = message.split(":");
         member.logManager.updateFollowersNextIndex(id, Integer.parseInt(split[0]) + 1);
     }
-
+    
+    public void appendRejectionReceived(int id, String message){
+        String[] split = message.split(":");
+        member.logManager.updateFollowersNextIndex(id, Integer.parseInt(split[0]) - 1);
+    }
 }

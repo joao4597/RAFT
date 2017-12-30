@@ -1,3 +1,4 @@
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -71,8 +72,10 @@ public class LogManager {
                             
                             for(int x = logList.size() - 1; x > i; x--){
                                 logList.remove(x);
+                                entryNumber--;
+                                System.out.println(i + "elemente deleted");
                             }
-                            
+                                System.out.println(serial + "-> serial Exists");
                             return true;
                         }
                     }
@@ -134,7 +137,7 @@ public class LogManager {
      * stores it's ID and stores the next index in the log
      */
     public void setUpFolloersInfo(){
-        followers.removeAll(logList);
+        followers.clear();
         for(int i = 0; i < clusterSize; i++){
             if(member.id != (firstPort + i)){
                 followers.add(new FollowersInfo(firstPort + i, entryNumber + 1));
@@ -161,33 +164,36 @@ public class LogManager {
         for(int i = 0; i < clusterSize - 1; i++){
             
             //FALLS ON THIS IF IN CASE LIDER THINKS ONLY LAST ENTRY IS MISSING IN FOLLOWERS LOG
-            ////////////This is to be put in a separete method/////////////////////////////////
-            if(followers.get(i).nextLogIndex == (entryNumber)){
-                String myID = Integer.toString(member.id);
-                String currentTerm = Integer.toString(member.currentTerm );
-                String type = "101";
-                
-                //INFORMATION RELATIVE TO THE PRIVIOUS COMMAND, ASSUMED TO BE ALREADY STORED IN THE FOLLOWERS LOG
-                String prevEntryIndex = Integer.toString(entryNumber - 1);
-                String prevEntryTerm = Integer.toString(logList.get(entryNumber - 2).termNumber);
-                String prevSerialNumber = Integer.toString(logList.get(entryNumber - 2).termNumber);
-                String prevCommand = logList.get(entryNumber - 2).command;
-                
-                //LOG ENTRY TO BE APPENDED IN FOLLOWERS LOG
-                String entryIndex = Integer.toString(entryNumber);
-                String entryTerm = Integer.toString(logList.get(entryNumber - 1).termNumber);
-                String serialNumber = Integer.toString(logList.get(entryNumber - 1).termNumber);
-                String command = logList.get(entryNumber - 1).command;
-                
-                //SETUP STRING TO SEND TO FOLLOWER
-                String message = myID + "-" + currentTerm + "-" + type + "-" 
-                        + prevEntryIndex + ":" + prevEntryTerm + ":" + prevSerialNumber + ":" + prevCommand + ":-"
-                        + entryIndex + ":" + entryTerm + ":" + serialNumber + ":" + command + ":-";
-                
-                //SEND STRING TO FOLLOWER
-                member.sendMessage(followers.get(i).id, message.getBytes());
+            if(followers.get(i).nextLogIndex <= (entryNumber)){
+                sendAppendRequestToFollower(followers.get(i).nextLogIndex, followers.get(i).id);
             }
         }
+    }
+    
+    public void sendAppendRequestToFollower(int entryToSend, int followerID){
+        String myID = Integer.toString(member.id);
+        String currentTerm = Integer.toString(member.currentTerm );
+        String type = "101";
+                
+        //INFORMATION RELATIVE TO THE PRIVIOUS COMMAND, ASSUMED TO BE ALREADY STORED IN THE FOLLOWERS LOG
+        String prevEntryIndex = Integer.toString(entryToSend - 1);
+        String prevEntryTerm = Integer.toString(logList.get(entryToSend - 2).termNumber);
+        String prevSerialNumber = Integer.toString(logList.get(entryToSend - 2).serialNumber());
+        String prevCommand = logList.get(entryToSend - 2).command;
+                
+        //LOG ENTRY TO BE APPENDED IN FOLLOWERS LOG
+        String entryIndex = Integer.toString(entryToSend);
+        String entryTerm = Integer.toString(logList.get(entryToSend - 1).termNumber);
+        String serialNumber = Integer.toString(logList.get(entryToSend - 1).serialNumber());
+        String command = logList.get(entryToSend - 1).command;
+                
+        //SETUP STRING TO SEND TO FOLLOWER
+        String message = myID + "-" + currentTerm + "-" + type + "-" 
+            + prevEntryIndex + ":" + prevEntryTerm + ":" + prevSerialNumber + ":" + prevCommand + ":-"
+            + entryIndex + ":" + entryTerm + ":" + serialNumber + ":" + command + ":-";
+                
+        //SEND STRING TO FOLLOWER
+        member.sendMessage(followerID, message.getBytes());
     }
     
     /**

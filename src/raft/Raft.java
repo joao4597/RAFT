@@ -6,7 +6,7 @@ public class Raft {
     public static void main(String[] args){
         int i;
         int x;
-        int clusterSize = 5;
+        int clusterSize = 31;
 
         Thread gui[] = new Thread[clusterSize];
         

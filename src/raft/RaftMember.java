@@ -17,7 +17,7 @@ public class RaftMember {
     public int state; // 0 - follower , 1 - leaderId , 2 - candidate
     public int currentTerm; // Mandato atual
     private float timeOutMean = 250; // Media do tempo de espera
-    public int clusterSize = 5; // numero de nós
+    public int clusterSize = 31; // numero de nós
     private long startTime; // tempo em que se começou a votação
     public int voteGranted; // Em vez de ser booleano, este valor tem o term maximo em que votou
     public long lastHeartBeat;

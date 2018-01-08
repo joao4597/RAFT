@@ -6,10 +6,11 @@ public class Raft {
     public static void main(String[] args){
         int i;
         int x;
+        int clusterSize = 5;
 
-        Thread gui[] = new Thread[5];
+        Thread gui[] = new Thread[clusterSize];
         
-        for(i = 4000, x = 0; i < 4005; i++, x++){
+        for(i = 4000, x = 0; i < 4000 + clusterSize; i++, x++){
             gui[x] = new Thread(new RAFTGuiThread(i));
             gui[x].start();
         }

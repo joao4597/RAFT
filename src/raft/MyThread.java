@@ -31,6 +31,7 @@ public class MyThread implements Runnable {
     }
 	
     public void run() {
+        int measurementFlag = 0;
         String receiveCommand ;
         int count = 0;
        
@@ -38,17 +39,20 @@ public class MyThread implements Runnable {
             
             //HALTS SERVER EXECUTION WHEN USER PRESSES PAUSE IN GUI
             refreshGui();
-            while (this.raftGui.statusLabel.getText().equals("Stoped")){
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(MyThread.class.getName()).log(Level.SEVERE, null, ex);
+            if(this.raftGui.statusLabel.getText().equals("Stoped")){
+                while (this.raftGui.statusLabel.getText().equals("Stoped")){
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(MyThread.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
+                member.clearReceiveSocket();
             }
 
             if(member.state == 1){ 
                 //System.out.println("Eu fui eleito Lider!! ->" + id);
-                if(count == 10000 ){ // O CODIGO DENTRO DESTE IF É SÓ PARA DEITAR O LIDER ATUAL A BAIXO E FORÇAR REELEIÇÃO - PODES APAGAR SE NÃO PRECISARES
+                if(count == -20 ){ // O CODIGO DENTRO DESTE IF É SÓ PARA DEITAR O LIDER ATUAL A BAIXO E FORÇAR REELEIÇÃO - PODES APAGAR SE NÃO PRECISARES
                     count = 0;
                     try {
                         //System.out.println("Thread: "+id+" DORMIR");
@@ -90,9 +94,9 @@ public class MyThread implements Runnable {
                 }
             }else if(Integer.parseInt(parts[2]) == 100){
                 receiveCommand = clientMessages.processMessage(Integer.parseInt(parts[0]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), parts[4].toString());
-                if(receiveCommand != null){
+                /*if(receiveCommand != null){
                     member.sendMessage(Integer.parseInt(parts[0]), receiveCommand.getBytes());
-                }
+                }*/
             }else {
                 System.out.println(receiveCommand);
                 logMessageProtocol.processMessage(receiveCommand);

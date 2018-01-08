@@ -73,6 +73,15 @@ public class LogMessageProtocol {
     public void appendConfirmationReceived(int id, String message){
         String[] split = message.split(":");
         member.logManager.updateFollowersNextIndex(id, Integer.parseInt(split[0]) + 1);
+        
+        int serialNumber = member.logManager.addReplica(Integer.parseInt(split[0]) - 1);
+        
+        if (serialNumber == -1){
+            return;
+        }
+        
+        String response = "Accepted-" + Integer.toString(serialNumber) + "-";
+        member.sendMessage(4100, response.getBytes());
     }
     
     public void appendRejectionReceived(int id, String message){

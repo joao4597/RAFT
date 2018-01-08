@@ -19,7 +19,7 @@ public class LogElement {
     public int termNumber = 0;
     public String command = null;
     private int serialNumber;
-    private int replicas = 0;
+    public float replicas = 0;
     
     private Object[] element = null;
     
@@ -46,7 +46,7 @@ public class LogElement {
         replicas++;
     }
     
-    public int replicas(){
+    public float replicas(){
         return replicas;
     }
     

@@ -43,6 +43,7 @@ public final class Messages {
                 raft.state = 1;
                 raft.voteCount = 0;
                 System.out.println("I " + raft.id + " was just elected leader");
+                //raft.saveElectionTime(System.nanoTime() - raft.electionTimeMeasurement);
                 raft.logManager.setUpFolloersInfo();/////////////////////////////////////////////
             }
         }

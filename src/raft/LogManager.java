@@ -63,6 +63,14 @@ public class LogManager {
 
     }
     
+    /**
+     * checks if entry exists and removes all entries and removes all posterior entries 
+     * @param index - entry index
+     * @param term - entry term
+     * @param serial - entry serial number
+     * @param command - entry command
+     * @return 
+     */
     public boolean checkIfEntryExists(int index, int term, int serial, String command){
         for(int i = logList.size() - 1; i >= 0; i--){
             if(logList.get(i).entryNumber == index){
@@ -73,6 +81,7 @@ public class LogManager {
                             for(int x = logList.size() - 1; x > i; x--){
                                 logList.remove(x);
                                 entryNumber--;
+                                model.removeRow(model.getRowCount() - 1);
                                 System.out.println(i + "elemente deleted");
                             }
                                 System.out.println(serial + "-> serial Exists");
@@ -109,7 +118,7 @@ public class LogManager {
         this.updateTable();
     }
     
-    /**
+     /**
      * updates table in gui
      */
     public void updateTable(){
@@ -118,17 +127,22 @@ public class LogManager {
         for(int i = logList.size() - linesMissing ; i < logList.size(); i++){
             model.addRow(logList.get(i).returnLogElement());
         }
+        
+        //scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
     }
     
     /**
      * increments the number of replicas for a given log entry
      * @param index log entry index
+     * @return 
      */
-    public void addReplica(int index){
-        logList.get(index).addReplica();
-        if (logList.get(index).replicas() >= (clusterSize / 2)){
+    public int addReplica(int index){
+        logList.get(index).replicas += 1;
+        if((logList.get(index).replicas - 0.5) >= (((float)clusterSize) / 2)){
+            return logList.get(index).serialNumber();
         } else {
             updateCommitedIndex(index);
+            return -1;
         }
     }
     

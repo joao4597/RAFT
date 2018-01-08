@@ -24,6 +24,11 @@ public class RaftMember {
     public LogManager logManager;
     public RAFTGui raftGui;
     
+    public FileWriter electionTimeFile;
+    
+    public long electionTimeMeasurement;
+    private double errorPercentage = 0.05;
+    
     public RaftMember(int newid, RAFTGui raftGui) throws SocketException, UnknownHostException {
         id = newid;
         
@@ -42,13 +47,23 @@ public class RaftMember {
         voteGranted = 0;
         
         
+        //START GUI AND LOG MANAGER
         this.raftGui = raftGui;
         logManager = new LogManager(raftGui, clusterSize, this);
         logManager.setUpFolloersInfo();
+        
+        //CREAT FILE TO SAVE MEASUREMENTS
+        //openFileElectionTime();
     }
     
     public void sendMessage(int port,byte sendData[]) {
         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+        
+        Random randomGenerator = new Random();
+        float randomVal = randomGenerator.nextFloat();
+        if(randomVal < errorPercentage){
+            return;
+        }
         
         try {
             sendSocket.send(sendPacket);
@@ -88,8 +103,15 @@ public class RaftMember {
     }
     
     public void broadCast(byte sendData[],int number) {
-        for(int i=4000; i < 4005; i++){
+        for(int i=4000; i < 4000 + clusterSize; i++){
             if(i != id) {
+                Random randomGenerator = new Random();
+                float randomVal = randomGenerator.nextFloat();
+                if(randomVal < errorPercentage){
+                    return;
+                }   
+                
+                
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, i);
                 try {
                     sendSocket.send(sendPacket);
@@ -110,5 +132,44 @@ public class RaftMember {
         broadCast(tmp.getBytes(), clusterSize);
         leaderId = id; // METE O ID DO LIDER IGUAL AO SEU
         startTime = System.nanoTime(); // INICIA TIMEOUT DE VOTAÇÃO
+        //electionTimeMeasurement = System.nanoTime();
+    }
+    
+    public void clearReceiveSocket(){
+        byte receiveData[] = new byte[1024];
+        String commandReceived;
+        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+        Random randomGenerator = new Random();
+        int timeout = 1;
+	
+        while(true){
+            try {
+                receiveSocket.setSoTimeout((int)timeout/1);
+                receiveSocket.receive(receivePacket);
+                commandReceived = new String(receivePacket.getData());  
+            } catch (IOException ex) {
+                return;
+            }
+        }
+    }
+    
+    public void openFileElectionTime(){
+        try {
+            File file = new File("electionTime" + Integer.toString(id) + ".txt");
+            electionTimeFile = new FileWriter(file, true);
+        } catch (IOException ex) {
+            Logger.getLogger(RaftMember.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void saveElectionTime(long time){
+        BufferedWriter out;
+        out = new BufferedWriter(electionTimeFile);
+        try {
+            out.write(Long.toString(time) + "\n");
+            out.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(RaftMember.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

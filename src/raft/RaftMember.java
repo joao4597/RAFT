@@ -17,7 +17,7 @@ public class RaftMember {
     public int state; // 0 - follower , 1 - leaderId , 2 - candidate
     public int currentTerm; // Mandato atual
     private float timeOutMean = 250; // Media do tempo de espera
-    public int clusterSize = 31; // numero de nós
+    public int clusterSize = 5; // numero de nós
     private long startTime; // tempo em que se começou a votação
     public int voteGranted; // Em vez de ser booleano, este valor tem o term maximo em que votou
     public long lastHeartBeat;
@@ -97,7 +97,9 @@ public class RaftMember {
                 else if(state == 2) 
                     if((System.nanoTime() - startTime) > (long)((randomVal/2.0 + 0.5) * 1e8)/1) // timeout à espera de voto
                         startVote();
-            }
+            }else if(state == 2) 
+                    if((System.nanoTime() - startTime) > (long)((randomVal/2.0 + 0.5) * 1e8)/1) // timeout à espera de voto
+                        startVote();
         }
         return null ;       
     }
@@ -122,13 +124,13 @@ public class RaftMember {
         }
     }
     
-    private void startVote() { // INICIA VOTAÇãO
+    public void startVote() { // INICIA VOTAÇãO
         state = 2; // candidate
         currentTerm ++; // INCREMENTA MANDATO
-        voteCount ++; // VOTA NELE PROPRIO
+        voteCount = 1; // VOTA NELE PROPRIO
         voteGranted = currentTerm; // DIZ QUE JÁ VOTOU NO MANDATO ATUAL CASO RECEBA OUTROS PEDIDOS DE VOTO
         System.out.println("Eu "+id+" Vou Iniciar Votação, currente term ->" + currentTerm);
-        String tmp = new String(id+"-"+currentTerm+"-2-");
+        String tmp = new String(id+"-"+currentTerm+"-2-" + logManager.entryNumber + "-");
         broadCast(tmp.getBytes(), clusterSize);
         leaderId = id; // METE O ID DO LIDER IGUAL AO SEU
         startTime = System.nanoTime(); // INICIA TIMEOUT DE VOTAÇÃO

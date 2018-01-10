@@ -19,13 +19,13 @@ public class ClientMessage {
 
     public String processMessage(int id, int type, int serialNumber, String command) {
 
-        String response;
-
         if((type == 100) && (member.state == 1)) { // RECEBI HEARTBEAT
             if (member.logManager.verifySerialExistance(serialNumber) == -1){
                 member.logManager.addLogEntry(member.currentTerm, command, serialNumber);
+            }else{
+                String response =  "Accepted-" + serialNumber + "-";
+                member.sendMessage(4100, response.getBytes());
             }
-            return "Accepted-" + serialNumber + "-";
         }
 
         return null;

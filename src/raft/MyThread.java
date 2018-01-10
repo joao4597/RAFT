@@ -87,7 +87,12 @@ public class MyThread implements Runnable {
             String[] parts = receiveCommand.split("-");
                 
             if(Integer.parseInt(parts[2]) < 100){
-                receiveCommand = Messages.processMessage(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), member); // SE FOR UM COMANDO QUE REQUER RESPOSTA ESTA VAI ESTAR CONTIDA EM receiveCommand, CASO CONTRARIO ELA É NULL 
+                if(Integer.parseInt(parts[2]) == 2){
+                    receiveCommand = Messages.processMessage(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), member); // SE FOR UM COMANDO QUE REQUER RESPOSTA ESTA VAI ESTAR CONTIDA EM receiveCommand, CASO CONTRARIO ELA É NULL 
+                }else{
+                    receiveCommand = Messages.processMessage(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]), Integer.parseInt(parts[2]), -1, member); // SE FOR UM COMANDO QUE REQUER RESPOSTA ESTA VAI ESTAR CONTIDA EM receiveCommand, CASO CONTRARIO ELA É NULL 
+                }
+                    
                 if(receiveCommand != null){
                     String[] portMsgSplit = receiveCommand.split(":"); // A RESPSOTA É FEITA NO SEGUINTE FORMATO id(para quem enviamos):id(o nosso)-term-type-
                     member.sendMessage(Integer.parseInt(portMsgSplit[0]),portMsgSplit[1].getBytes());

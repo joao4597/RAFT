@@ -2,7 +2,7 @@ package raft;
 
 public final class Messages {
 
-    public static String processMessage(int id, int term, int type, RaftMember raft) {
+    public static String processMessage(int id, int term, int type, int logEntry, RaftMember raft) {
 
         String response;
 
@@ -23,6 +23,10 @@ public final class Messages {
         }
         else if((type == 2) && (raft.currentTerm < term) ) { // RECEBI VOTE REQUEST
             if((raft.voteGranted < term) ){
+                if(logEntry < raft.logManager.entryNumber){
+                    raft.startVote();
+                    return null;
+                }
                 raft.state = 0;
                 raft.currentTerm = term;
                 raft.leaderId = id;
@@ -39,10 +43,10 @@ public final class Messages {
         else if(type == 3) {
             raft.voteCount ++ ;
             if((raft.state == 2) && (raft.voteCount > raft.clusterSize/2)) {
+                System.out.println("I " + raft.id + " was just elected leader vote count->" + raft.voteCount);
                 heartBeat(raft, raft.clusterSize);
                 raft.state = 1;
                 raft.voteCount = 0;
-                System.out.println("I " + raft.id + " was just elected leader");
                 //raft.saveElectionTime(System.nanoTime() - raft.electionTimeMeasurement);
                 raft.logManager.setUpFolloersInfo();/////////////////////////////////////////////
             }
